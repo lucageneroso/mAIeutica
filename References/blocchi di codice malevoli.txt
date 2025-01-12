@@ -1,0 +1,358 @@
+public class HotelManager {
+
+    private List<Room> rooms;
+    private List<Booking> bookings;
+
+    public HotelManager() {
+        rooms = new ArrayList<>();
+        bookings = new ArrayList<>();
+    }
+
+    // Code smell 1: Long Method
+    public void bookRoom(String guestName, String roomType, int nights) {
+        Room room = findAvailableRoom(roomType);
+        if (room != null) {
+            Booking booking = new Booking(guestName, room, nights);
+            bookings.add(booking);
+            room.setAvailable(false);
+            System.out.println("Booking successful for " + guestName + " in " + roomType + " for " + nights + " nights.");
+
+            // Code smell 2: Duplicated Code
+            // Same block of code to print reservation details again
+            printBookingDetails(booking);
+        } else {
+            System.out.println("No rooms available for the requested type.");
+        }
+    }
+
+    // Code smell 2: Duplicated Code
+    public void cancelBooking(String guestName, String roomType) {
+        for (Booking booking : bookings) {
+            if (booking.getGuestName().equals(guestName) && booking.getRoom().getRoomType().equals(roomType)) {
+                Room room = booking.getRoom();
+                bookings.remove(booking);
+                room.setAvailable(true);
+                System.out.println("Booking canceled for " + guestName + " in " + roomType);
+
+                printBookingDetails(booking);
+                return;
+            }
+        }
+        System.out.println("No booking found to cancel for " + guestName);
+    }
+
+    private void printBookingDetails(Booking booking) {
+        System.out.println("Guest: " + booking.getGuestName());
+        System.out.println("Room Type: " + booking.getRoom().getRoomType());
+        System.out.println("Nights: " + booking.getNights());
+    }
+
+    private Room findAvailableRoom(String roomType) {
+        for (Room room : rooms) {
+            if (room.getRoomType().equals(roomType) && room.isAvailable()) {
+                return room;
+            }
+        }
+        return null;
+    }
+
+    public void addRoom(Room room) {
+        rooms.add(room);
+    }
+}
+
+class Room {
+    private String roomType;
+    private boolean available;
+
+    public Room(String roomType) {
+        this.roomType = roomType;
+        this.available = true;
+    }
+
+    public String getRoomType() {
+        return roomType;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+}
+
+class Booking {
+    private String guestName;
+    private Room room;
+    private int nights;
+
+    public Booking(String guestName, Room room, int nights) {
+        this.guestName = guestName;
+        this.room = room;
+        this.nights = nights;
+    }
+
+    public String getGuestName() {
+        return guestName;
+    }
+
+    public Room getRoom() {
+        return room;
+    }
+
+    public int getNights() {
+        return nights;
+    }
+}
+
+
+// BLOCCO DI CODICE DI TEST 2:
+public class BankAccount {
+
+    private double balance;
+    private String accountNumber;
+    private String accountHolder;
+
+    public BankAccount(String accountNumber, String accountHolder, double initialBalance) {
+        this.accountNumber = accountNumber;
+        this.accountHolder = accountHolder;
+        this.balance = initialBalance;
+    }
+
+    // Metodo lungo che gestisce troppi compiti
+    public void processTransaction(String transactionType, double amount, String recipientAccount) {
+        if (transactionType.equals("deposit")) {
+            deposit(amount);
+        } else if (transactionType.equals("withdraw")) {
+            withdraw(amount);
+        } else if (transactionType.equals("transfer")) {
+            transfer(amount, recipientAccount);
+        }
+        System.out.println("Transaction processed: " + transactionType);
+        System.out.println("Amount: " + amount);
+        System.out.println("Account Balance: " + balance);
+    }
+
+    // Metodo che contiene codice duplicato
+    public void deposit(double amount) {
+        balance += amount;
+        System.out.println("Deposit made: " + amount);
+    }
+
+    // Metodo che contiene codice duplicato
+    public void withdraw(double amount) {
+        balance -= amount;
+        System.out.println("Withdrawal made: " + amount);
+    }
+
+    // Metodo che contiene codice duplicato
+    public void transfer(double amount, String recipientAccount) {
+        balance -= amount;
+        System.out.println("Transferred: " + amount + " to " + recipientAccount);
+    }
+
+    // Classe con troppe responsabilità
+    public void generateStatement() {
+        // Genera un'istruzione per l'account
+        System.out.println("Account Statement: ");
+        System.out.println("Account Number: " + accountNumber);
+        System.out.println("Account Holder: " + accountHolder);
+        System.out.println("Balance: " + balance);
+    }
+
+    // Classe con troppe responsabilità
+    public void printTransactionHistory() {
+        // Stampa le transazioni effettuate (pseudo codificato)
+        System.out.println("Transaction History: ");
+        System.out.println("Transaction 1: Deposit - $1000");
+        System.out.println("Transaction 2: Withdrawal - $500");
+    }
+}
+
+public class Bank {
+    private List<BankAccount> accounts;
+
+    public Bank() {
+        accounts = new ArrayList<>();
+    }
+
+    // Metodo troppo lungo che gestisce la creazione dell'account e l'elenco di transazioni
+    public void createAccountAndProcessTransaction(String accountNumber, String accountHolder, double initialBalance, String transactionType, double amount, String recipientAccount) {
+        BankAccount newAccount = new BankAccount(accountNumber, accountHolder, initialBalance);
+        accounts.add(newAccount);
+        newAccount.processTransaction(transactionType, amount, recipientAccount);
+    }
+}
+Code Smells nel codice:
+Metodo lungo e complesso (processTransaction):
+
+Il metodo processTransaction gestisce troppi casi diversi (deposito, prelievo, trasferimento) e stampa molte informazioni direttamente. È un buon candidato per essere suddiviso in metodi più piccoli.
+Codice duplicato nei metodi deposit, withdraw, transfer:
+
+I metodi deposit, withdraw e transfer contengono codice duplicato che potrebbe essere centralizzato in un altro metodo per evitare la ripetizione.
+Classe con troppe responsabilità (BankAccount e Bank):
+
+La classe BankAccount gestisce sia le operazioni bancarie (depositi, prelievi, trasferimenti) che la generazione di report (statements e transazioni). Questo contrasta con il principio di Single Responsibility Principle (SRP).
+La classe Bank si occupa della gestione degli account e delle transazioni, ma dovrebbe concentrarsi solo sulla gestione degli account.
+Variabili globali non necessarie:
+
+La gestione degli account è memorizzata nella lista accounts della classe Bank. Mentre non è tecnicamente un "global" in senso stretto, l'uso di una variabile condivisa per gestire tutte le operazioni è una dipendenza che potrebbe essere migliorata con il passaggio di oggetti o l'uso di design più modulare.
+Metodo troppo lungo per la creazione dell'account e la gestione della transazione (createAccountAndProcessTransaction):
+
+Questo metodo fa troppo, creando un account e poi eseguendo una transazione. Dovrebbe essere suddiviso in più metodi.
+
+///////////////////////////////////////////////////////////////////////////////////////////
+BLOCCO DI CODICE TEST 3
+public class Library {
+
+    private List<Book> books;
+    private List<Member> members;
+
+    public Library() {
+        books = new ArrayList<>();
+        members = new ArrayList<>();
+    }
+
+    // Metodo con troppe responsabilità e logica complessa
+    public void handleRequest(String requestType, String bookTitle, String memberName) {
+        if (requestType.equals("borrow")) {
+            borrowBook(bookTitle, memberName);
+        } else if (requestType.equals("return")) {
+            returnBook(bookTitle, memberName);
+        } else if (requestType.equals("reserve")) {
+            reserveBook(bookTitle, memberName);
+        }
+        System.out.println("Request: " + requestType + " for book: " + bookTitle + " by member: " + memberName);
+    }
+
+    // Metodo duplicato che potrebbe essere generalizzato
+    public void borrowBook(String bookTitle, String memberName) {
+        Book book = findBook(bookTitle);
+        Member member = findMember(memberName);
+        if (book != null && member != null && !book.isBorrowed()) {
+            book.setBorrowed(true);
+            member.addBorrowedBook(book);
+            System.out.println("Book borrowed: " + bookTitle);
+        }
+    }
+
+    // Metodo duplicato che potrebbe essere generalizzato
+    public void returnBook(String bookTitle, String memberName) {
+        Book book = findBook(bookTitle);
+        Member member = findMember(memberName);
+        if (book != null && member != null && book.isBorrowed()) {
+            book.setBorrowed(false);
+            member.removeBorrowedBook(book);
+            System.out.println("Book returned: " + bookTitle);
+        }
+    }
+
+    // Metodo duplicato che potrebbe essere generalizzato
+    public void reserveBook(String bookTitle, String memberName) {
+        Book book = findBook(bookTitle);
+        Member member = findMember(memberName);
+        if (book != null && member != null && !book.isReserved()) {
+            book.setReserved(true);
+            member.addReservedBook(book);
+            System.out.println("Book reserved: " + bookTitle);
+        }
+    }
+
+    // Metodo di ricerca duplicato
+    public Book findBook(String title) {
+        for (Book book : books) {
+            if (book.getTitle().equals(title)) {
+                return book;
+            }
+        }
+        return null;
+    }
+
+    // Metodo di ricerca duplicato
+    public Member findMember(String name) {
+        for (Member member : members) {
+            if (member.getName().equals(name)) {
+                return member;
+            }
+        }
+        return null;
+    }
+}
+
+public class Book {
+    private String title;
+    private boolean isBorrowed;
+    private boolean isReserved;
+
+    public Book(String title) {
+        this.title = title;
+        this.isBorrowed = false;
+        this.isReserved = false;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public boolean isBorrowed() {
+        return isBorrowed;
+    }
+
+    public void setBorrowed(boolean borrowed) {
+        isBorrowed = borrowed;
+    }
+
+    public boolean isReserved() {
+        return isReserved;
+    }
+
+    public void setReserved(boolean reserved) {
+        isReserved = reserved;
+    }
+}
+
+public class Member {
+    private String name;
+    private List<Book> borrowedBooks;
+    private List<Book> reservedBooks;
+
+    public Member(String name) {
+        this.name = name;
+        borrowedBooks = new ArrayList<>();
+        reservedBooks = new ArrayList<>();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void addBorrowedBook(Book book) {
+        borrowedBooks.add(book);
+    }
+
+    public void removeBorrowedBook(Book book) {
+        borrowedBooks.remove(book);
+    }
+
+    public void addReservedBook(Book book) {
+        reservedBooks.add(book);
+    }
+}
+Code Smells nel codice (meno evidenti):
+Metodo lungo e complesso (handleRequest):
+
+Il metodo handleRequest sta facendo troppo, gestendo tre casi separati (prestito, restituzione, prenotazione) in un unico metodo. Sebbene non sembri un "metodo troppo lungo" evidente, il suo compito complesso potrebbe essere estratto in metodi separati.
+Codice duplicato nei metodi borrowBook, returnBook, reserveBook:
+
+I metodi borrowBook, returnBook e reserveBook fanno quasi la stessa cosa, ovvero cercano il libro, il membro e aggiornano lo stato. Il codice duplicato potrebbe essere centralizzato in un unico metodo per ridurre la ripetizione.
+Classi con troppa logica (separazione delle preoccupazioni):
+
+La classe Library ha troppe responsabilità, gestendo sia la logica di prestito dei libri che la gestione dei membri. Questi compiti potrebbero essere separati in classi più specializzate.
+Variabili globali non necessarie e metodi di ricerca duplicati:
+
+I metodi findBook e findMember sono simili e potrebbero essere unificati o generalizzati per evitare ripetizioni. Inoltre, la classe Member e la classe Book hanno responsabilità eccessive nella gestione dei dati (libreria e membri).
+Dipendenza tra oggetti (Library conosce direttamente Book e Member):
+
+La classe Library dipende direttamente dalle classi Book e Member, creando un accoppiamento forte che potrebbe essere migliorato tramite interfacce o altre tecniche di design.
